@@ -8,21 +8,20 @@ public class ChatClient
 
     public ChatClient()
     {
-        
         ChatRequest = new ChatRequest();
-        ChatRequest.Messages = new List<Message>()
+        ChatRequest.Messages = new List<Message>
         {
-            new Message()
+            new()
             {
                 Role = "system",
                 Content = "You are a helpful assistant."
-            },
+            }
         };
         ChatRequest.Model = "deepseek-chat";
         ChatRequest.FrequencyPenalty = 0;
         ChatRequest.MaxTokens = 2048;
         ChatRequest.PresencePenalty = 0;
-        ChatRequest.ResponseFormat = new ResponseFormat()
+        ChatRequest.ResponseFormat = new ResponseFormat
         {
             Type = "text"
         };
@@ -39,12 +38,12 @@ public class ChatClient
 
     public async UniTask<string> SendChatMsg(string msg)
     {
-        ChatRequest.Messages.Add(new Message()
+        ChatRequest.Messages.Add(new Message
         {
             Role = "user",
             Content = msg
         });
-        
+
         var chatCompletion = await ChatUtil.SendChatMsg(ChatRequest);
         var result = chatCompletion.Choices[0].Message;
         ChatRequest.Messages.Add(result);

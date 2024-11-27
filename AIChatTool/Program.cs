@@ -9,10 +9,10 @@ internal class Program
             var res = await chatClient.SendChatMsg("你好");
             //Console.WriteLine(res);
         }
-        
+
         while (true)
         {
-            string? msg = Console.ReadLine();
+            var msg = Console.ReadLine();
             var res = await chatClient.SendChatMsg(msg);
             //Console.WriteLine(res);
         }
