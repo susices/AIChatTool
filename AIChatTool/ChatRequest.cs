@@ -27,7 +27,7 @@ public class ChatRequest
 
     [JsonPropertyName("top_p")] public int TopP { get; set; }
 
-    [JsonPropertyName("tools")] public object Tools { get; set; }
+    [JsonPropertyName("tools")]  public List<Tool> Tools { get; set; }
 
     [JsonPropertyName("tool_choice")] public string ToolChoice { get; set; }
 
@@ -40,3 +40,5 @@ public class ResponseFormat
 {
     [JsonPropertyName("type")] public string Type { get; set; }
 }
+
+

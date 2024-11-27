@@ -31,7 +31,7 @@ public class ChatClient
         ChatRequest.Temperature = 1;
         ChatRequest.TopP = 1;
         ChatRequest.Tools = null;
-        ChatRequest.ToolChoice = "none";
+        ChatRequest.ToolChoice = "auto";
         ChatRequest.Logprobs = false;
         ChatRequest.TopLogprobs = null;
     }
