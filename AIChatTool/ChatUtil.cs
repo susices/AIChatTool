@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using AIChatTool.FunctionCalls;
 using Cysharp.Threading.Tasks;
 
 namespace AIChatTool;
@@ -29,14 +30,23 @@ public static class ChatUtil
 
         var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
-        if (response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode)
+        {
+            // Handle error response
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"Request failed with status code {response.StatusCode}: {errorContent}");
+        }
+
+        if (chatRequest.Stream)
+        {
             using (var stream = await response.Content.ReadAsStreamAsync())
             using (var streamReader = new StreamReader(stream, Encoding.UTF8))
             {
                 var responseContentBuilder = new StringBuilder();
-                string line;
+                string? line;
 
                 while ((line = await streamReader.ReadLineAsync()) != null)
+                {
                     if (line.StartsWith("data: "))
                     {
                         var jsonChunk = line.Substring("data: ".Length);
@@ -56,6 +66,8 @@ public static class ChatUtil
                             }
                         }
                     }
+                }
+                    
 
                 Console.Write("\n");
 
@@ -77,9 +89,66 @@ public static class ChatUtil
                 };
                 return finalChatCompletion;
             }
+        }
+        else
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Debug: {responseContent}");
+            var chatCompletion = JsonSerializer.Deserialize<ChatCompletion>(responseContent, JsonContext.Default.ChatCompletion);
+            if (chatCompletion==null)
+            {
+                Console.WriteLine("json parse ChatCompletion error");
+                return null;
+            }
+            var message = chatCompletion?.Choices?.FirstOrDefault()?.Message;
+            if (message==null)
+            {
+                return null;
+            }
 
-        // Handle error response
-        var errorContent = await response.Content.ReadAsStringAsync();
-        throw new HttpRequestException($"Request failed with status code {response.StatusCode}: {errorContent}");
+            if (message.ToolCalls?.Count>0)
+            {
+                List<Message>? toolCallResults = await HandleToolCalls(chatRequest,message.ToolCalls);
+                if (toolCallResults==null)
+                {
+                    Console.WriteLine("tool call error");
+                    return null;
+                }
+                chatRequest.Messages.Add(message);
+                chatRequest.Messages.AddRange(toolCallResults);
+                return await SendChatMsg(chatRequest);
+            }
+            else
+            {
+                Console.WriteLine(chatCompletion?.Choices?.FirstOrDefault()?.Message.Content);
+            }
+            
+            return chatCompletion;
+        }
+        
+    }
+    
+    public static async UniTask<List<Message>> HandleToolCalls(ChatRequest chatRequest,List<ToolCall> toolCalls)
+    {
+        var tasks = new List<UniTask<Message>>();
+        foreach (var toolCall in toolCalls)
+        {
+            tasks.Add(HandleToolCall(chatRequest, toolCall));
+        }
+        var result = await UniTask.WhenAll(tasks);
+        return result.ToList();
+    }
+
+    public static async UniTask<Message> HandleToolCall(ChatRequest chatRequest, ToolCall toolCall)
+    {
+        await UniTask.CompletedTask;
+        var result = await FunctionCallDispatcher.Dispatch(toolCall.Function.Name, toolCall.Function.Arguments);
+        
+        return new Message()
+        {
+            Role = "tool",
+            ToolCallId = toolCall.Id,
+            Content = result,
+        };
     }
 }

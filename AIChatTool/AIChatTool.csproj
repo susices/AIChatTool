@@ -8,6 +8,7 @@
         <PublishAot>true</PublishAot>
         <IsAotCompatible>true</IsAotCompatible>
         <PublishTrimmed>true</PublishTrimmed>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>

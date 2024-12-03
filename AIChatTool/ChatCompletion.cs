@@ -29,6 +29,7 @@ public class Choice
     [JsonPropertyName("logprobs")] public object Logprobs { get; set; }
 
     [JsonPropertyName("finish_reason")] public string FinishReason { get; set; }
+    
 }
 
 public class Message
@@ -43,11 +44,14 @@ public class Message
     public List<ToolCall> ToolCalls { get; set; }
     
     [JsonPropertyName("tool_call_id")]
-    public string ToolCallId { get; set; }
+    public string ToolCallId { get; set;}
 }
 
 public class ToolCall
 {
+    [JsonPropertyName("index")]
+    public int Index { get; set; }
+    
     [JsonPropertyName("id")]
     public string Id { get; set; }
 

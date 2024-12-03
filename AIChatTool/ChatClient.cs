@@ -26,7 +26,7 @@ public class ChatClient
             Type = "text"
         };
         ChatRequest.Stop = null;
-        ChatRequest.Stream = true;
+        ChatRequest.Stream = false;
         ChatRequest.StreamOptions = null;
         ChatRequest.Temperature = 1;
         ChatRequest.TopP = 1;
@@ -34,6 +34,38 @@ public class ChatClient
         ChatRequest.ToolChoice = "auto";
         ChatRequest.Logprobs = false;
         ChatRequest.TopLogprobs = null;
+
+
+        var tools = new List<Tool>();
+        ChatRequest.Tools = tools;
+        tools.Add(new Tool
+        {
+            Type = "function",
+            Function = new Function
+            {
+                Name = "get_weather",
+                Description = "Get weather of an location, the user shoud supply a location first",
+                Parameters = new Parameters
+                {
+                    Type = "object",
+                    Properties = new Dictionary<string, Property>
+                    {
+                        {
+                            "location",
+                            new Property()
+                            {
+                                Type = "string",
+                                Description = "The city and state, e.g. San Francisco, CA"
+                            }
+                        }
+                    },
+                    Required = new List<string>()
+                    {
+                        "location"
+                    }
+                }
+            }
+        });
     }
 
     public async UniTask<string> SendChatMsg(string msg)
