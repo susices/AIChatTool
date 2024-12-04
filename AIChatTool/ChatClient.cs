@@ -1,3 +1,4 @@
+using AIChatTool.FunctionCalls;
 using Cysharp.Threading.Tasks;
 
 namespace AIChatTool;
@@ -41,30 +42,7 @@ public class ChatClient
         tools.Add(new Tool
         {
             Type = "function",
-            Function = new Function
-            {
-                Name = "get_weather",
-                Description = "Get weather of an location, the user shoud supply a location first",
-                Parameters = new Parameters
-                {
-                    Type = "object",
-                    Properties = new Dictionary<string, Property>
-                    {
-                        {
-                            "location",
-                            new Property()
-                            {
-                                Type = "string",
-                                Description = "The city and state, e.g. San Francisco, CA"
-                            }
-                        }
-                    },
-                    Required = new List<string>()
-                    {
-                        "location"
-                    }
-                }
-            }
+            Function = FunctionCallGetWeather.Function
         });
     }
 

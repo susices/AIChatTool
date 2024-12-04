@@ -93,7 +93,7 @@ public static class ChatUtil
         else
         {
             var responseContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Debug: {responseContent}");
+            //Console.WriteLine($"Debug: {responseContent}");
             var chatCompletion = JsonSerializer.Deserialize<ChatCompletion>(responseContent, JsonContext.Default.ChatCompletion);
             if (chatCompletion==null)
             {
