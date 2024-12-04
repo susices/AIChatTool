@@ -17,11 +17,12 @@ public class ChatRequest
 
     [JsonPropertyName("response_format")] public ResponseFormat ResponseFormat { get; set; }
 
-    [JsonPropertyName("stop")] public object Stop { get; set; }
+    [JsonPropertyName("stop")] public object? Stop { get; set; }
 
     [JsonPropertyName("stream")] public bool Stream { get; set; }
 
-    [JsonPropertyName("stream_options")] public object StreamOptions { get; set; }
+    
+    [JsonPropertyName("stream_options")] public object? StreamOptions { get; set; }
 
     [JsonPropertyName("temperature")] public int Temperature { get; set; }
 
@@ -33,7 +34,7 @@ public class ChatRequest
 
     [JsonPropertyName("logprobs")] public bool Logprobs { get; set; }
 
-    [JsonPropertyName("top_logprobs")] public object TopLogprobs { get; set; }
+    [JsonPropertyName("top_logprobs")] public object? TopLogprobs { get; set; }
 }
 
 public class ResponseFormat

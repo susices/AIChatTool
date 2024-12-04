@@ -8,19 +8,15 @@ namespace AIChatTool;
 
 public static class ChatUtil
 {
-    private static readonly HttpClient httpClient = new()
+    public static async UniTask<ChatCompletion> SendChatMsg(this ChatClient chatClient)
     {
-        BaseAddress = new Uri("https://api.deepseek.com"),
-        Timeout = Timeout.InfiniteTimeSpan
-    };
-
-    public static async UniTask<ChatCompletion> SendChatMsg(ChatRequest chatRequest)
-    {
+        ChatRequest chatRequest = chatClient.ChatRequest;
+        var httpClient = chatClient.httpClient;
         httpClient.DefaultRequestHeaders.Clear();
         httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ConfigUtil.API_KEY);
-
-        var jsonContent = JsonSerializer.Serialize(chatRequest, JsonContext.Default.ChatRequest);
+        
+        var jsonContent = JsonSerializer.Serialize(chatRequest, JsonContext.Context.ChatRequest);
         var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
         var request = new HttpRequestMessage(HttpMethod.Post, "chat/completions")
@@ -116,7 +112,7 @@ public static class ChatUtil
                 }
                 chatRequest.Messages.Add(message);
                 chatRequest.Messages.AddRange(toolCallResults);
-                return await SendChatMsg(chatRequest);
+                return await chatClient.SendChatMsg();
             }
             else
             {

@@ -7,8 +7,18 @@ public class ChatClient
 {
     public ChatRequest ChatRequest;
 
-    public ChatClient()
+    public HttpClient httpClient;
+    
+    public readonly ModelInfo ModelInfo;
+
+    public ChatClient(ModelInfo modelInfo)
     {
+        ModelInfo = modelInfo;
+        httpClient =  new()
+        {
+            BaseAddress = new Uri(modelInfo.Url),
+            Timeout = Timeout.InfiniteTimeSpan
+        };
         ChatRequest = new ChatRequest();
         ChatRequest.Messages = new List<Message>
         {
@@ -18,7 +28,8 @@ public class ChatClient
                 Content = "You are a helpful assistant."
             }
         };
-        ChatRequest.Model = "deepseek-chat";
+        //ChatRequest.Model = "deepseek-chat";
+        ChatRequest.Model = modelInfo.ModelName;
         ChatRequest.FrequencyPenalty = 0;
         ChatRequest.MaxTokens = 2048;
         ChatRequest.PresencePenalty = 0;
@@ -54,7 +65,7 @@ public class ChatClient
             Content = msg
         });
 
-        var chatCompletion = await ChatUtil.SendChatMsg(ChatRequest);
+        var chatCompletion = await this.SendChatMsg();
         var result = chatCompletion.Choices[0].Message;
         ChatRequest.Messages.Add(result);
         return result.Content;

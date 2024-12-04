@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace AIChatTool;
@@ -8,4 +9,8 @@ namespace AIChatTool;
 [JsonSerializable(typeof(Dictionary<string,string>))]
 internal partial class JsonContext : JsonSerializerContext
 {
+    public static JsonContext Context { get; } = new(new JsonSerializerOptions()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    });
 }

@@ -4,7 +4,7 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        var chatClient = new ChatClient();
+        var chatClient = new ChatClient(ModelConfig.QwenPlus);
         {
             var res = await chatClient.SendChatMsg("你好");
             //Console.WriteLine(res);
