@@ -7,7 +7,7 @@ namespace AIChatTool;
 [JsonSerializable(typeof(ChatCompletion))]
 [JsonSerializable(typeof(ChatCompletionChunk))]
 [JsonSerializable(typeof(Dictionary<string,string>))]
-internal partial class JsonContext : JsonSerializerContext
+public partial class JsonContext : JsonSerializerContext
 {
     public static JsonContext Context { get; } = new(new JsonSerializerOptions()
     {

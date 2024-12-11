@@ -24,9 +24,9 @@ public class ChatRequest
     
     [JsonPropertyName("stream_options")] public object? StreamOptions { get; set; }
 
-    [JsonPropertyName("temperature")] public int Temperature { get; set; }
+    [JsonPropertyName("temperature")] public float Temperature { get; set; }
 
-    [JsonPropertyName("top_p")] public int TopP { get; set; }
+    [JsonPropertyName("top_p")] public float TopP { get; set; }
 
     [JsonPropertyName("tools")]  public List<Tool> Tools { get; set; }
 

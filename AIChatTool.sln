@@ -1,6 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AIChatTool", "AIChatTool\AIChatTool.csproj", "{91F425B7-6669-4DEA-ACE3-237760472193}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{91F425B7-6669-4DEA-ACE3-237760472193}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalAIAgent", "LocalAIAgent\LocalAIAgent.csproj", "{B4584151-37B9-4555-85A1-24CC6D82CBB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestConsole", "TestConsole\TestConsole.csproj", "{A19ED41C-C9E6-4F72-A751-BC0279D68335}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +16,13 @@ Global
 		{91F425B7-6669-4DEA-ACE3-237760472193}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91F425B7-6669-4DEA-ACE3-237760472193}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91F425B7-6669-4DEA-ACE3-237760472193}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4584151-37B9-4555-85A1-24CC6D82CBB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4584151-37B9-4555-85A1-24CC6D82CBB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4584151-37B9-4555-85A1-24CC6D82CBB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4584151-37B9-4555-85A1-24CC6D82CBB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A19ED41C-C9E6-4F72-A751-BC0279D68335}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A19ED41C-C9E6-4F72-A751-BC0279D68335}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A19ED41C-C9E6-4F72-A751-BC0279D68335}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A19ED41C-C9E6-4F72-A751-BC0279D68335}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

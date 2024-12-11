@@ -1,4 +1,6 @@
-﻿namespace AIChatTool;
+﻿
+
+using AIChatTool;
 
 internal class Program
 {
