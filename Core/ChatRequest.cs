@@ -11,7 +11,7 @@ public class ChatRequest
     [JsonPropertyName("frequency_penalty")]
     public int? FrequencyPenalty { get; set; }
 
-    [JsonPropertyName("max_tokens")] public int MaxTokens { get; set; }
+    [JsonPropertyName("max_tokens")] public int? MaxTokens { get; set; }
 
     [JsonPropertyName("presence_penalty")] public int? PresencePenalty { get; set; }
 
