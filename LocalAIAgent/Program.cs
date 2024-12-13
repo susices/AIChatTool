@@ -31,7 +31,22 @@ app.Run();
 
 async Task HandleChatCompletion(HttpContext context, [FromBody] ChatRequest request)
 {
-    var chatClient = new ChatClient(ModelConfig.QwenPlus, request);
+    bool isStreamRequest = request.Stream;
+    string modelurl = context.Request.Query["modelurl"];
+    if (modelurl==null)
+    {
+        Console.WriteLine(" modelurl is null");
+        return;
+    }
+    // 获取context中的 apikey
+    var apiKey = context.Request.Headers["Authorization"].ToString().Split(" ")[1];
+    // 强制关闭stream
+    request.Stream = false;
+    var chatClient = new ChatClient(new ModelInfo()
+    {
+        ModelName = request.Model,
+        Url = modelurl
+    },apiKey, request);
     ChatCompletion? response;
     try
     {
@@ -50,7 +65,7 @@ async Task HandleChatCompletion(HttpContext context, [FromBody] ChatRequest requ
     }
     
     // 非流式返回
-    if (!request.Stream)
+    if (!isStreamRequest)
     {
         var json = JsonSerializer.Serialize(response, JsonContext.Context.ChatCompletion);
         await context.Response.WriteAsync(json);

@@ -8,7 +8,9 @@ internal class Program
     {
         try
         {
-            var chatClient = new ChatClient(ModelConfig.TestLocalAgent);
+            // 自备apikey
+            string apiKey = null;
+            var chatClient = new ChatClient(ModelConfig.QwenPlus, apiKey);
             {
                 var res = await chatClient.SendChatMsg("你好");
                 //Console.WriteLine(res);

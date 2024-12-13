@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Net.Security;
 using AIChatTool.FunctionCalls;
 using Cysharp.Threading.Tasks;
@@ -12,7 +13,7 @@ public class ChatClient
     
     public readonly ModelInfo ModelInfo;
 
-    public ChatClient(ModelInfo modelInfo, ChatRequest? chatRequest=null)
+    public ChatClient(ModelInfo modelInfo,string apiKey, ChatRequest? chatRequest=null)
     {
         ModelInfo = modelInfo;
         if (chatRequest==null)
@@ -28,9 +29,7 @@ public class ChatClient
             };
             //ChatRequest.Model = "deepseek-chat";
             chatRequest.Model = modelInfo.ModelName;
-            chatRequest.FrequencyPenalty = 0;
             chatRequest.MaxTokens = 2048;
-            chatRequest.PresencePenalty = 0;
             chatRequest.ResponseFormat = new ResponseFormat
             {
                 Type = "text"
@@ -38,11 +37,10 @@ public class ChatClient
             chatRequest.Stop = null;
             chatRequest.Stream = false;
             chatRequest.StreamOptions = null;
-            chatRequest.Temperature = 1;
+            chatRequest.Temperature = 0.8f;
             chatRequest.TopP = 1;
             chatRequest.Tools = null;
             chatRequest.ToolChoice = "auto";
-            chatRequest.Logprobs = false;
             chatRequest.TopLogprobs = null;
         }
         ChatRequest = chatRequest;
@@ -73,6 +71,10 @@ public class ChatClient
             BaseAddress = new Uri(modelInfo.Url),
             Timeout = Timeout.InfiniteTimeSpan,
         };
+        httpClient.DefaultRequestHeaders.Clear();
+        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", apiKey);
     }
 
     public async UniTask<string?> SendChatMsg(string msg)

@@ -9,11 +9,11 @@ public class ChatRequest
     [JsonPropertyName("model")] public string Model { get; set; }
 
     [JsonPropertyName("frequency_penalty")]
-    public int FrequencyPenalty { get; set; }
+    public int? FrequencyPenalty { get; set; }
 
     [JsonPropertyName("max_tokens")] public int MaxTokens { get; set; }
 
-    [JsonPropertyName("presence_penalty")] public int PresencePenalty { get; set; }
+    [JsonPropertyName("presence_penalty")] public int? PresencePenalty { get; set; }
 
     [JsonPropertyName("response_format")] public ResponseFormat ResponseFormat { get; set; }
 
@@ -32,7 +32,7 @@ public class ChatRequest
 
     [JsonPropertyName("tool_choice")] public string ToolChoice { get; set; }
 
-    [JsonPropertyName("logprobs")] public bool Logprobs { get; set; }
+    [JsonPropertyName("logprobs")] public bool? Logprobs { get; set; }
 
     [JsonPropertyName("top_logprobs")] public object? TopLogprobs { get; set; }
 }
