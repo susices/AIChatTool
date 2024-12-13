@@ -1,3 +1,4 @@
+using System.Net.Security;
 using AIChatTool.FunctionCalls;
 using Cysharp.Threading.Tasks;
 
@@ -54,14 +55,27 @@ public class ChatClient
             Function = FunctionCallGetWeather.Function
         });
         ModelInfo = modelInfo;
-        httpClient =  new()
+        HttpClientHandler handler = new();
+        handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
+        {
+            // 检查主机名是否为 localhost 或 127.0.0.1
+            if (sender is HttpRequestMessage request && 
+                (request.RequestUri.Host == "localhost" || request.RequestUri.Host == "127.0.0.1")) 
+            {
+                return true; // 对 localhost 地址始终返回 true，忽略证书错误
+            }
+
+            // 对于非 localhost 地址，执行默认的证书验证逻辑 (生产环境中必须这样做)
+            return sslPolicyErrors == SslPolicyErrors.None;
+        };
+        httpClient =  new(handler)
         {
             BaseAddress = new Uri(modelInfo.Url),
-            Timeout = Timeout.InfiniteTimeSpan
+            Timeout = Timeout.InfiniteTimeSpan,
         };
     }
 
-    public async UniTask<string> SendChatMsg(string msg)
+    public async UniTask<string?> SendChatMsg(string msg)
     {
         ChatRequest.Messages.Add(new Message
         {
@@ -70,6 +84,10 @@ public class ChatClient
         });
 
         var chatCompletion = await this.SendChatMsg();
+        if (chatCompletion==null)
+        {
+            return null;
+        }
         var result = chatCompletion.Choices[0].Message;
         ChatRequest.Messages.Add(result);
         return result.Content;

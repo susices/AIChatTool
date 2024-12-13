@@ -8,129 +8,129 @@ namespace AIChatTool;
 
 public static class ChatUtil
 {
-    public static async UniTask<ChatCompletion> SendChatMsg(this ChatClient chatClient)
+    public static async UniTask<ChatCompletion?> SendChatMsg(this ChatClient chatClient)
     {
-        ChatRequest chatRequest = chatClient.ChatRequest;
-        var httpClient = chatClient.httpClient;
-        httpClient.DefaultRequestHeaders.Clear();
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ConfigUtil.API_KEY);
-        
-        var jsonContent = JsonSerializer.Serialize(chatRequest, JsonContext.Context.ChatRequest);
-        var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "chat/completions")
+        try
         {
-            Content = content
-        };
+            var chatRequest = chatClient.ChatRequest;
+            var httpClient = chatClient.httpClient;
+            httpClient.DefaultRequestHeaders.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", ConfigUtil.API_KEY);
 
-        var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            var jsonContent = JsonSerializer.Serialize(chatRequest, JsonContext.Context.ChatRequest);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-        if (!response.IsSuccessStatusCode)
-        {
-            // Handle error response
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Request failed with status code {response.StatusCode}: {errorContent}");
-        }
-
-        if (chatRequest.Stream)
-        {
-            using (var stream = await response.Content.ReadAsStreamAsync())
-            using (var streamReader = new StreamReader(stream, Encoding.UTF8))
+            var request = new HttpRequestMessage(HttpMethod.Post, "chat/completions")
             {
-                var responseContentBuilder = new StringBuilder();
-                string? line;
+                Content = content
+            };
 
-                while ((line = await streamReader.ReadLineAsync()) != null)
+            var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // Handle error response
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException(
+                    $"Request failed with status code {response.StatusCode}: {errorContent}");
+            }
+
+            if (chatRequest.Stream)
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                using (var streamReader = new StreamReader(stream, Encoding.UTF8))
                 {
-                    if (line.StartsWith("data: "))
-                    {
-                        var jsonChunk = line.Substring("data: ".Length);
+                    var responseContentBuilder = new StringBuilder();
+                    string? line;
 
-                        if (jsonChunk == "[DONE]") break;
-
-                        var chunk = JsonSerializer.Deserialize<ChatCompletionChunk>(jsonChunk,
-                            JsonContext.Default.ChatCompletionChunk);
-
-                        if (chunk.Choices != null && chunk.Choices.Count > 0)
+                    while ((line = await streamReader.ReadLineAsync()) != null)
+                        if (line.StartsWith("data: "))
                         {
-                            var deltaContent = chunk.Choices[0].Delta?.Content;
-                            if (!string.IsNullOrEmpty(deltaContent))
+                            var jsonChunk = line.Substring("data: ".Length);
+
+                            if (jsonChunk == "[DONE]") break;
+
+                            var chunk = JsonSerializer.Deserialize<ChatCompletionChunk>(jsonChunk,
+                                JsonContext.Default.ChatCompletionChunk);
+
+                            if (chunk.Choices != null && chunk.Choices.Count > 0)
                             {
-                                responseContentBuilder.Append(deltaContent);
-                                Console.Write(deltaContent);
+                                var deltaContent = chunk.Choices[0].Delta?.Content;
+                                if (!string.IsNullOrEmpty(deltaContent))
+                                {
+                                    responseContentBuilder.Append(deltaContent);
+                                    Console.Write(deltaContent);
+                                }
                             }
                         }
-                    }
+
+
+                    Console.Write("\n");
+
+                    // 返回最终的 ChatCompletion 对象
+                    var responseContent = responseContentBuilder.ToString();
+                    var finalChatCompletion = new ChatCompletion
+                    {
+                        Choices = new List<Choice>
+                        {
+                            new()
+                            {
+                                Message = new Message
+                                {
+                                    Role = "assistant",
+                                    Content = responseContent
+                                }
+                            }
+                        }
+                    };
+                    return finalChatCompletion;
                 }
-                    
 
-                Console.Write("\n");
-
-                // 返回最终的 ChatCompletion 对象
-                var responseContent = responseContentBuilder.ToString();
-                var finalChatCompletion = new ChatCompletion
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
+                //Console.WriteLine($"Debug: {responseContent}");
+                var chatCompletion =
+                    JsonSerializer.Deserialize<ChatCompletion>(responseContent, JsonContext.Default.ChatCompletion);
+                if (chatCompletion == null)
                 {
-                    Choices = new List<Choice>
-                    {
-                        new()
-                        {
-                            Message = new Message
-                            {
-                                Role = "assistant",
-                                Content = responseContent
-                            }
-                        }
-                    }
-                };
-                return finalChatCompletion;
-            }
-        }
-        else
-        {
-            var responseContent = await response.Content.ReadAsStringAsync();
-            //Console.WriteLine($"Debug: {responseContent}");
-            var chatCompletion = JsonSerializer.Deserialize<ChatCompletion>(responseContent, JsonContext.Default.ChatCompletion);
-            if (chatCompletion==null)
-            {
-                Console.WriteLine("json parse ChatCompletion error");
-                return null;
-            }
-            var message = chatCompletion?.Choices?.FirstOrDefault()?.Message;
-            if (message==null)
-            {
-                return null;
-            }
-
-            if (message.ToolCalls?.Count>0)
-            {
-                List<Message>? toolCallResults = await HandleToolCalls(chatRequest,message.ToolCalls);
-                if (toolCallResults==null)
-                {
-                    Console.WriteLine("tool call error");
+                    Console.WriteLine("json parse ChatCompletion error");
                     return null;
                 }
-                chatRequest.Messages.Add(message);
-                chatRequest.Messages.AddRange(toolCallResults);
-                return await chatClient.SendChatMsg();
-            }
-            else
-            {
+
+                var message = chatCompletion?.Choices?.FirstOrDefault()?.Message;
+                if (message == null) return null;
+
+                if (message.ToolCalls?.Count > 0)
+                {
+                    List<Message>? toolCallResults = await HandleToolCalls(chatRequest, message.ToolCalls);
+                    if (toolCallResults == null)
+                    {
+                        Console.WriteLine("tool call error");
+                        return null;
+                    }
+
+                    chatRequest.Messages.Add(message);
+                    chatRequest.Messages.AddRange(toolCallResults);
+                    return await chatClient.SendChatMsg();
+                }
+
                 Console.WriteLine(chatCompletion?.Choices?.FirstOrDefault()?.Message.Content);
+
+                return chatCompletion;
             }
-            
-            return chatCompletion;
         }
-        
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return null;
+        }
     }
-    
-    public static async UniTask<List<Message>> HandleToolCalls(ChatRequest chatRequest,List<ToolCall> toolCalls)
+
+    public static async UniTask<List<Message>> HandleToolCalls(ChatRequest chatRequest, List<ToolCall> toolCalls)
     {
         var tasks = new List<UniTask<Message>>();
-        foreach (var toolCall in toolCalls)
-        {
-            tasks.Add(HandleToolCall(chatRequest, toolCall));
-        }
+        foreach (var toolCall in toolCalls) tasks.Add(HandleToolCall(chatRequest, toolCall));
         var result = await UniTask.WhenAll(tasks);
         return result.ToList();
     }
@@ -139,12 +139,12 @@ public static class ChatUtil
     {
         await UniTask.CompletedTask;
         var result = await FunctionCallDispatcher.Dispatch(toolCall.Function.Name, toolCall.Function.Arguments);
-        
-        return new Message()
+
+        return new Message
         {
             Role = "tool",
             ToolCallId = toolCall.Id,
-            Content = result,
+            Content = result
         };
     }
 }
