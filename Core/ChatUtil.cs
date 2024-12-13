@@ -14,10 +14,6 @@ public static class ChatUtil
     {
         var chatRequest = chatClient.ChatRequest;
         var httpClient = chatClient.httpClient;
-        httpClient.DefaultRequestHeaders.Clear();
-        httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        httpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", ConfigUtil.API_KEY);
 
         var jsonContent = JsonSerializer.Serialize(chatRequest, JsonContext.Context.ChatRequest);
         var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
